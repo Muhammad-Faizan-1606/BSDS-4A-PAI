@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Restaurant QnA Bot</title>
+    <style>
+        body {
+            background: #fff8f0;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        h2 {
+            text-align: center;
+            color: #c0392b;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+        }
+        .chat-box {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            height: 380px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+        }
+        .msg-user {
+            text-align: right;
+            margin: 6px 0;
+        }
+        .msg-user span {
+            background: #c0392b;
+            color: white;
+            padding: 7px 12px;
+            border-radius: 10px;
+            display: inline-block;
+        }
+        .msg-bot {
+            text-align: left;
+            margin: 6px 0;
+        }
+        .msg-bot span {
+            background: #f0f0f0;
+            color: #333;
+            padding: 7px 12px;
+            border-radius: 10px;
+            display: inline-block;
+        }
+        .input-section {
+            display: flex;
+            gap: 8px;
+        }
+        input[type=text] {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 15px;
+        }
+        button {
+            padding: 10px 18px;
+            background: #c0392b;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 15px;
+        }
+        button:hover {
+            background: #a93226;
+        }
+        p.hint {
+            text-align: center;
+            color: gray;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Spice Garden - Ask Anything</h2>
+        <p class="hint">Ask about menu, prices, timing, location, delivery, reservations etc.</p>
+        <div class="chat-box" id="chat">
+            <div class="msg-bot"><span>Hello! Ask me anything about our restaurant.</span></div>
+        </div>
+        <div class="input-section">
+            <input type="text" id="qInput" placeholder="Type your question..." onkeypress="enter(event)">
+            <button onclick="ask()">Ask</button>
+        </div>
+    </div>
+
+    <script>
+        function enter(e) {
+            if (e.key === 'Enter') ask();
+        }
+
+        function ask() {
+            var q = document.getElementById('qInput').value.trim();
+            if (!q) return;
+
+            var chat = document.getElementById('chat');
+
+            var uDiv = document.createElement('div');
+            uDiv.className = 'msg-user';
+            uDiv.innerHTML = '<span>' + q + '</span>';
+            chat.appendChild(uDiv);
+
+            document.getElementById('qInput').value = '';
+
+            fetch('/ask', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({question: q})
+            })
+            .then(res => res.json())
+            .then(data => {
+                var bDiv = document.createElement('div');
+                bDiv.className = 'msg-bot';
+                bDiv.innerHTML = '<span>' + data.answer + '</span>';
+                chat.appendChild(bDiv);
+                chat.scrollTop = chat.scrollHeight;
+            });
+        }
+    </script>
+</body>
+</html>

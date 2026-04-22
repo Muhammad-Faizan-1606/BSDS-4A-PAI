@@ -1,0 +1,28 @@
+Lab 11 - Task 1
+Muhammad Faizan
+Programming for Artificial Intelligence
+
+
+1. LangChain
+LangChain is a framework that helps developers build applications using large language models. It makes it easy to connect LLMs with other tools like databases, APIs, and file systems. The main idea behind langchain is that instead of just sending a single prompt to a model you can create a "chain" of steps. For example first you retrieve some data, then you pass it to the model, then you do something with the output. It is very useful for building chatbots or question answering systems that need to use outside knowledge.
+
+2. LLMs (Large Language Models)
+LLMs are very big neural network models that are trained on huge amounts of text data. Because of all that training they can understand and generate human language. They can answer questions, write essays, translate text, summarize things and even write code. Examples of LLMs are GPT-4, LLaMA, Falcon and Google's PaLM. The word "large" refers to the fact that these models have billions of parameters which is why they need a lot of computing power to train.
+
+3. RAG (Retrieval-Augmented Generation)
+RAG stands for Retrieval Augmented Generation. The problem with normal LLMs is that they only know things from their training data and cannot look up new information. RAG fixes this by combining a search system with an LLM. When you ask a question the system first searches through a set of documents to find relevant info and then passes that info to the LLM to generate an answer. This way the model can answer questions about recent events or specific company documents that it was never trained on.
+
+4. FAISS (Facebook AI Similarity Search)
+FAISS is a library made by Facebook AI Research. It is used to do very fast similarity search on large sets of vectors. Basically if you have millions of vectors and you want to find which ones are closest to a query vector FAISS can do that very efficiently. In AI applications it is usually used with embeddings. For example you convert all your documents into vectors and store them in FAISS. When a user asks a question you convert the question into a vector and use FAISS to find the most similar document vectors.
+
+5. Vector
+In AI a vector is just a list of numbers. When we want a machine to understand something like a word or a sentence or an image we convert it into a vector. The numbers in the vector capture the meaning or features of the original data. For example the word "king" might be represented as [0.5, 0.2, -0.1, 0.8, ...] with hundreds of numbers. The cool thing is that similar words will have similar vectors so you can do math with them. Vector representations are also called embeddings.
+
+6. VectorDB (Vector Database)
+A VectorDB is a special type of database that is designed to store and search vectors. Normal databases like MySQL are good for searching exact values but they are not good at finding "similar" items. A VectorDB is built for this. You store your vectors in it and then you can quickly find the most similar vectors to a given query. Popular vector databases include Pinecone, ChromaDB, Weaviate and Qdrant. They are widely used in RAG systems and recommendation systems.
+
+7. Generative AI (GenAI)
+Generative AI is a type of AI that can create new content. This includes text, images, audio, video and code. Unlike traditional AI which just classifies or predicts, generative AI actually produces something new. Examples are ChatGPT which generates text, DALL-E which generates images, and GitHub Copilot which generates code. GenAI models learn patterns from large datasets and then use those patterns to generate new original content that looks similar to what they were trained on.
+
+8. GANs (Generative Adversarial Networks)
+GANs are a type of generative AI model that was introduced by Ian Goodfellow in 2014. A GAN has two neural networks that work against each other. One network is called the Generator and its job is to create fake data that looks real. The other network is called the Discriminator and its job is to tell apart real data from fake data. Both networks keep improving as they compete with each other. Eventually the generator gets so good that the discriminator cannot tell the difference. GANs are mostly used for generating realistic images and videos.

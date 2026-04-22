@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Random Joke App</title>
+    <style>
+        body {
+            background-color: #f0f8ff;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding-top: 80px;
+        }
+        h1 {
+            color: #333;
+        }
+        .box {
+            background-color: white;
+            border: 2px solid #ccc;
+            border-radius: 10px;
+            padding: 30px;
+            width: 500px;
+            margin: auto;
+        }
+        .joke-text {
+            font-size: 20px;
+            color: #444;
+            margin-top: 15px;
+        }
+        .cat {
+            color: gray;
+            font-size: 14px;
+        }
+        a {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 25px;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        a:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>Random Joke Generator</h1>
+    <div class="box">
+        <p class="cat">Category: {{ category }}</p>
+        <p class="joke-text">{{ joke }}</p>
+        <a href="/new">Get Another Joke</a>
+    </div>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Spice Garden Chatbot</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background-color: #f5f5f5;
+            font-family: Arial, sans-serif;
+        }
+        .header {
+            background-color: #c0392b;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 22px;
+        }
+        .chat-area {
+            width: 600px;
+            margin: 30px auto;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .messages {
+            height: 400px;
+            overflow-y: auto;
+            padding: 15px;
+        }
+        .user-msg {
+            text-align: right;
+            margin: 8px 0;
+        }
+        .user-msg span {
+            background-color: #c0392b;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 12px;
+            display: inline-block;
+            max-width: 80%;
+        }
+        .bot-msg {
+            text-align: left;
+            margin: 8px 0;
+        }
+        .bot-msg span {
+            background-color: #ecf0f1;
+            color: #333;
+            padding: 8px 12px;
+            border-radius: 12px;
+            display: inline-block;
+            max-width: 80%;
+        }
+        .input-row {
+            display: flex;
+            border-top: 1px solid #ddd;
+        }
+        .input-row input {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            outline: none;
+            font-size: 15px;
+        }
+        .input-row button {
+            padding: 12px 20px;
+            background-color: #c0392b;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 15px;
+        }
+        .input-row button:hover {
+            background-color: #a93226;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">Spice Garden Restaurant - Chat with us</div>
+    <div class="chat-area">
+        <div class="messages" id="messages">
+            <div class="bot-msg"><span>Hi! I am Spice Garden assistant. Ask me about menu, prices, location, delivery etc.</span></div>
+        </div>
+        <div class="input-row">
+            <input type="text" id="userInput" placeholder="Type your message..." onkeypress="checkEnter(event)" />
+            <button onclick="sendMsg()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        function checkEnter(e) {
+            if (e.key === 'Enter') {
+                sendMsg();
+            }
+        }
+
+        function sendMsg() {
+            var txt = document.getElementById('userInput').value;
+            if (txt.trim() == '') return;
+
+            var box = document.getElementById('messages');
+
+            var userDiv = document.createElement('div');
+            userDiv.className = 'user-msg';
+            userDiv.innerHTML = '<span>' + txt + '</span>';
+            box.appendChild(userDiv);
+
+            document.getElementById('userInput').value = '';
+
+            fetch('/send', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ msg: txt })
+            })
+            .then(r => r.json())
+            .then(data => {
+                var botDiv = document.createElement('div');
+                botDiv.className = 'bot-msg';
+                botDiv.innerHTML = '<span>' + data.reply + '</span>';
+                box.appendChild(botDiv);
+                box.scrollTop = box.scrollHeight;
+            });
+        }
+    </script>
+</body>
+</html>
