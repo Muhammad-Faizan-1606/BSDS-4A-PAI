@@ -1,0 +1,15 @@
+# Initialize git if you haven't already
+git init
+
+# Add all files
+git add .
+
+# Commit changes
+git commit -m "Deploy to HF Spaces"
+
+# Add your Hugging Face Space as a remote origin
+# (Replace your-username and your-space-name below)
+git remote add origin https://huggingface.co/spaces/jo1606/prescriscan-ai
+
+# Push to the main branch
+git push -u origin main

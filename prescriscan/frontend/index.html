@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PrescriScan AI — Prescription Reader</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Sora:wght@400;500;600&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Sora', sans-serif;
+    background: #0a0d14;
+    color: #e8eaf0;
+    min-height: 100vh;
+  }
+
+  .app-shell {
+    display: grid;
+    grid-template-rows: 60px 1fr;
+    min-height: 100vh;
+  }
+
+  header {
+    background: #0e1220;
+    border-bottom: 1px solid #1e2535;
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    gap: 12px;
+    position: sticky; top: 0; z-index: 10;
+  }
+
+  .logo-mark {
+    width: 34px; height: 34px;
+    background: linear-gradient(135deg, #3b82f6, #06b6d4);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 600; color: white; letter-spacing: -0.5px;
+  }
+
+  header h1 { font-size: 15px; font-weight: 500; color: #e8eaf0; letter-spacing: -0.2px; }
+
+  .header-badge {
+    font-size: 11px; color: #4a5568;
+    background: #1a2035; border: 1px solid #2d3748;
+    padding: 2px 8px; border-radius: 4px;
+    font-family: 'DM Mono', monospace;
+    margin-left: 4px;
+  }
+
+  .prolog-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: #1a0d2e; color: #a78bfa;
+    border: 1px solid #4c1d95;
+    padding: 3px 10px; border-radius: 4px;
+    font-size: 10px; font-family: 'DM Mono', monospace;
+  }
+
+  .workspace {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    height: calc(100vh - 60px);
+  }
+
+  .left-panel {
+    background: #0e1220;
+    border-right: 1px solid #1e2535;
+    display: flex; flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .panel-section {
+    padding: 20px;
+    border-bottom: 1px solid #1e2535;
+  }
+
+  .panel-label {
+    font-size: 11px; font-weight: 500;
+    text-transform: uppercase; letter-spacing: 1px;
+    color: #4a5568; margin-bottom: 12px;
+  }
+
+  .upload-zone {
+    border: 1.5px dashed #2d3748;
+    border-radius: 12px; padding: 28px 20px;
+    text-align: center; cursor: pointer;
+    transition: all 0.2s; background: #080b12;
+    position: relative;
+  }
+
+  .upload-zone:hover, .upload-zone.drag-over {
+    border-color: #3b82f6; background: #0d1526;
+  }
+
+  .upload-zone.has-image { border-style: solid; border-color: #1e3a5f; }
+
+  .upload-icon {
+    width: 40px; height: 40px;
+    margin: 0 auto 12px; background: #1a2035;
+    border-radius: 10px; display: flex;
+    align-items: center; justify-content: center;
+  }
+
+  .upload-zone p { font-size: 13px; color: #6b7280; line-height: 1.5; }
+  .upload-zone strong { color: #9ca3af; }
+
+  #imagePreview {
+    width: 100%; border-radius: 8px; margin-top: 12px;
+    display: none; max-height: 200px; object-fit: contain;
+  }
+
+  #fileInput { display: none; }
+
+  .btn-row { display: flex; gap: 8px; margin-top: 12px; }
+
+  .btn-primary {
+    flex: 1; padding: 10px 16px;
+    background: #2563eb; color: white; border: none;
+    border-radius: 8px; font-size: 13px; font-weight: 500;
+    font-family: 'Sora', sans-serif; cursor: pointer;
+    transition: all 0.15s;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .btn-primary:hover { background: #1d4ed8; }
+  .btn-primary:disabled { background: #1e2535; color: #4a5568; cursor: not-allowed; }
+
+  .btn-demo {
+    padding: 10px 14px;
+    background: #1a2035; color: #6b7280;
+    border: 1px solid #2d3748; border-radius: 8px;
+    font-size: 12px; font-family: 'Sora', sans-serif;
+    cursor: pointer; transition: all 0.15s; white-space: nowrap;
+  }
+  .btn-demo:hover { color: #9ca3af; border-color: #4a5568; }
+
+  .medicines-list { display: flex; flex-direction: column; gap: 8px; }
+
+  .medicine-tag {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 12px; background: #080b12;
+    border: 1px solid #1e2535; border-radius: 8px; font-size: 13px;
+  }
+
+  .med-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .med-name { font-weight: 500; flex: 1; }
+  .med-dose { font-size: 11px; color: #4a5568; font-family: 'DM Mono', monospace; }
+
+  .prolog-view {
+    background: #080b12; border: 1px solid #1e2535;
+    border-radius: 8px; padding: 14px;
+    font-family: 'DM Mono', monospace; font-size: 11px;
+    line-height: 2; max-height: 240px; overflow-y: auto;
+  }
+
+  .pl-comment { color: #374151; }
+  .pl-fact { color: #60a5fa; }
+  .pl-rule { color: #a78bfa; }
+  .pl-string { color: #4ade80; }
+  .pl-paren { color: #fbbf24; }
+
+  .right-panel {
+    background: #080b12;
+    overflow-y: auto; padding: 24px;
+  }
+
+  .empty-state {
+    height: 100%; display: flex;
+    flex-direction: column; align-items: center;
+    justify-content: center; text-align: center;
+    gap: 16px; color: #374151;
+  }
+
+  .empty-state h2 { font-size: 18px; font-weight: 500; }
+  .empty-state p { font-size: 13px; color: #2d3748; max-width: 300px; line-height: 1.6; }
+
+  .loading-state {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    height: 100%; gap: 24px; color: #4a5568;
+  }
+
+  .loading-spinner {
+    width: 40px; height: 40px;
+    border: 2px solid #1e2535; border-top-color: #3b82f6;
+    border-radius: 50%; animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading-steps { display: flex; flex-direction: column; gap: 10px; text-align: center; }
+
+  .step-item {
+    font-size: 13px; color: #374151;
+    display: flex; align-items: center; gap: 8px; justify-content: center;
+    transition: all 0.3s;
+  }
+  .step-item.active { color: #60a5fa; }
+  .step-item.done { color: #4ade80; }
+
+  .tabs {
+    display: flex; gap: 4px; background: #0e1220;
+    border: 1px solid #1e2535; border-radius: 8px;
+    padding: 4px; margin-bottom: 20px;
+  }
+
+  .tab {
+    flex: 1; padding: 8px 10px; font-size: 12px; font-weight: 500;
+    background: transparent; border: none; border-radius: 6px;
+    cursor: pointer; color: #4a5568;
+    font-family: 'Sora', sans-serif; transition: all 0.15s;
+  }
+  .tab.active { background: #1e2535; color: #e8eaf0; }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  .results-grid { display: flex; flex-direction: column; gap: 16px; }
+
+  .result-card {
+    background: #0e1220; border: 1px solid #1e2535;
+    border-radius: 12px; padding: 20px;
+  }
+
+  .result-card-header {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 14px; flex-wrap: wrap;
+  }
+
+  .status-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 10px; border-radius: 20px;
+    font-size: 11px; font-weight: 500;
+  }
+
+  .badge-danger { background: #2d0f0f; color: #f87171; border: 1px solid #7f1d1d; }
+  .badge-warning { background: #2d1e0f; color: #fbbf24; border: 1px solid #78350f; }
+  .badge-success { background: #0f2d1a; color: #4ade80; border: 1px solid #14532d; }
+  .badge-ok { background: #0f2d1a; color: #4ade80; border: 1px solid #14532d; }
+  .badge-info { background: #0f1e2d; color: #60a5fa; border: 1px solid #1e3a5f; }
+
+  .dot { width: 6px; height: 6px; border-radius: 50%; }
+  .dot-danger { background: #f87171; }
+  .dot-warning { background: #fbbf24; }
+  .dot-success, .dot-ok { background: #4ade80; }
+  .dot-info { background: #60a5fa; }
+
+  .interaction-item {
+    padding: 12px 14px; background: #080b12;
+    border-radius: 8px; margin-bottom: 8px;
+    border-left: 3px solid transparent;
+  }
+  .interaction-item.danger { border-left-color: #f87171; }
+  .interaction-item.warning { border-left-color: #fbbf24; }
+  .interaction-item.ok, .interaction-item.success { border-left-color: #4ade80; }
+
+  .interaction-item p { font-size: 13px; line-height: 1.6; color: #9ca3af; }
+  .interaction-item strong { color: #e8eaf0; }
+
+  .raw-text-box {
+    background: #080b12; border: 1px solid #1e2535;
+    border-radius: 8px; padding: 14px;
+    font-family: 'DM Mono', monospace; font-size: 12px;
+    color: #6b7280; line-height: 1.8; white-space: pre-wrap;
+  }
+
+  .score-ring {
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
+    width: 84px; height: 84px;
+    border-radius: 50%; border: 3px solid #1e2535;
+  }
+  .score-ring.safe { border-color: #4ade80; }
+  .score-ring.moderate { border-color: #fbbf24; }
+  .score-ring.high { border-color: #f87171; }
+
+  .score-num { font-size: 24px; font-weight: 600; }
+  .score-label { font-size: 9px; color: #4a5568; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  /* Responsive for smaller screens */
+  @media (max-width: 768px) {
+    .workspace { grid-template-columns: 1fr; }
+    .left-panel { max-height: 50vh; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+  <header>
+    <div class="logo-mark">Rx</div>
+    <h1>PrescriScan AI</h1>
+    <span class="header-badge">v1.0 · prototype</span>
+    <div style="flex:1"></div>
+    <span class="prolog-badge">⬡ prolog engine</span>
+  </header>
+
+  <div class="workspace">
+
+    <!-- LEFT PANEL -->
+    <div class="left-panel">
+
+      <!-- Upload -->
+      <div class="panel-section">
+        <div class="panel-label">Upload Prescription</div>
+        <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+          <div class="upload-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4a90e2" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0 3 3m-3-3-3 3M6.75 19.5a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.338-2.32 5.75 5.75 0 0 1 6.074 6.019V19.5a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 19.5H6.75z"/>
+            </svg>
+          </div>
+          <p><strong>Click to upload</strong> or drag & drop<br>JPG, PNG of handwritten prescription</p>
+          <img id="imagePreview" alt="Prescription preview"/>
+        </div>
+        <input type="file" id="fileInput" accept="image/*" onchange="handleFileSelect(event)"/>
+
+        <div class="btn-row">
+          <button class="btn-primary" id="analyzeBtn" disabled onclick="analyzeImage()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+            </svg>
+            Analyze
+          </button>
+          <button class="btn-demo" onclick="loadDemo()">Load Demo</button>
+          <button class="btn-demo" onclick="resetApp()">Reset</button>
+        </div>
+      </div>
+
+      <!-- Detected Medicines -->
+      <div class="panel-section" id="medPanel" style="display:none">
+        <div class="panel-label" style="display:flex;align-items:center;justify-content:space-between">
+          Detected Medicines
+          <span id="medCount" style="font-size:11px;background:#1a2035;padding:2px 8px;border-radius:10px;color:#6b7280;font-weight:400;text-transform:none;letter-spacing:0">0</span>
+        </div>
+        <div class="medicines-list" id="medicinesList"></div>
+      </div>
+
+      <!-- Prolog KB Preview -->
+      <div class="panel-section">
+        <div class="panel-label">Prolog Knowledge Base</div>
+        <div class="prolog-view">
+<span class="pl-comment">% Drug interaction facts</span>
+<span class="pl-fact">interacts(warfarin, aspirin, <span class="pl-string">danger</span>, ...).</span>
+<span class="pl-fact">interacts(ssri, maoi, <span class="pl-string">danger</span>, ...).</span>
+<span class="pl-fact">interacts(digoxin, amiodarone, <span class="pl-string">warning</span>, ...).</span>
+<span class="pl-comment">% Max safe daily doses (mg)</span>
+<span class="pl-fact">max_dose(paracetamol, <span class="pl-string">4000</span>).</span>
+<span class="pl-fact">max_dose(ibuprofen, <span class="pl-string">2400</span>).</span>
+<span class="pl-fact">max_dose(warfarin, <span class="pl-string">15</span>).</span>
+<span class="pl-comment">% Dosage validation rule</span>
+<span class="pl-rule">valid_dose(Drug, Dose) :-</span>
+<span class="pl-rule">  max_dose(Drug, Max), Dose =&lt; Max.</span>
+<span class="pl-comment">% Side effect facts</span>
+<span class="pl-fact">side_effect(metformin, <span class="pl-string">nausea</span>).</span>
+<span class="pl-fact">side_effect(warfarin, <span class="pl-string">bleeding_risk</span>).</span>
+<span class="pl-fact">side_effect(ssri, <span class="pl-string">insomnia</span>).</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="right-panel" id="rightPanel">
+
+      <!-- Empty State -->
+      <div class="empty-state" id="emptyState">
+        <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" opacity="0.3">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25Z"/>
+        </svg>
+        <h2>No prescription loaded</h2>
+        <p>Upload a photo of a handwritten prescription, or click "Load Demo" to see a sample analysis with drug interaction detection.</p>
+      </div>
+
+      <!-- Loading State -->
+      <div id="loadingState" class="loading-state" style="display:none">
+        <div class="loading-spinner"></div>
+        <div class="loading-steps">
+          <div class="step-item" id="step1">🔍 Running OCR on prescription image...</div>
+          <div class="step-item" id="step2">💊 Extracting medicine names & dosages...</div>
+          <div class="step-item" id="step3">⬡ Querying Prolog interaction engine...</div>
+          <div class="step-item" id="step4">📊 Generating safety report...</div>
+        </div>
+      </div>
+
+      <!-- Results State -->
+      <div id="resultsState" style="display:none">
+        <div class="tabs">
+          <button class="tab active" onclick="switchTab('overview')">Overview</button>
+          <button class="tab" onclick="switchTab('interactions')">Interactions</button>
+          <button class="tab" onclick="switchTab('dosage')">Dosage</button>
+          <button class="tab" onclick="switchTab('effects')">Side Effects</button>
+          <button class="tab" onclick="switchTab('ocr')">Raw OCR</button>
+        </div>
+
+        <!-- Overview Tab -->
+        <div id="tab-overview" class="tab-content active">
+          <div class="results-grid">
+            <div class="result-card">
+              <div style="display:flex;align-items:center;gap:20px">
+                <div class="score-ring" id="safetyRing">
+                  <span class="score-num" id="safetyScore" style="color:#4ade80">--</span>
+                  <span class="score-label">safety</span>
+                </div>
+                <div>
+                  <div style="font-size:12px;color:#4a5568;margin-bottom:6px">Overall Risk Assessment</div>
+                  <div id="overallVerdict" style="font-size:18px;font-weight:600"></div>
+                  <div id="overallSub" style="font-size:12px;color:#4a5568;margin-top:4px"></div>
+                </div>
+              </div>
+            </div>
+            <div class="result-card">
+              <div class="result-card-header">
+                <span class="panel-label" style="margin:0">Prescription Summary</span>
+              </div>
+              <div id="summaryContent" style="font-size:13px;color:#9ca3af;line-height:1.8"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Interactions Tab -->
+        <div id="tab-interactions" class="tab-content">
+          <div class="result-card">
+            <div class="result-card-header">
+              <span class="panel-label" style="margin:0">Drug Interaction Analysis</span>
+              <span class="prolog-badge">⬡ prolog verified</span>
+            </div>
+            <div id="interactionsContent"></div>
+          </div>
+        </div>
+
+        <!-- Dosage Tab -->
+        <div id="tab-dosage" class="tab-content">
+          <div class="result-card">
+            <div class="result-card-header">
+              <span class="panel-label" style="margin:0">Dosage Validation</span>
+            </div>
+            <div id="dosageContent"></div>
+          </div>
+        </div>
+
+        <!-- Side Effects Tab -->
+        <div id="tab-effects" class="tab-content">
+          <div class="result-card">
+            <div class="result-card-header">
+              <span class="panel-label" style="margin:0">Known Side Effects</span>
+            </div>
+            <div id="effectsContent"></div>
+          </div>
+        </div>
+
+        <!-- Raw OCR Tab -->
+        <div id="tab-ocr" class="tab-content">
+          <div class="result-card">
+            <div class="result-card-header">
+              <span class="panel-label" style="margin:0">Raw OCR Output</span>
+            </div>
+            <div class="raw-text-box" id="ocrText"></div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// Config — change this to point to your Flask backend
+// ============================================================
+const BACKEND_URL = "";
+const USE_BACKEND = true; // Set true when Flask is running
+const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
+
+// ============================================================
+// State
+// ============================================================
+let currentImageData = null;
+
+const MED_COLORS = ['#60a5fa','#a78bfa','#4ade80','#fbbf24','#f87171','#34d399','#fb923c'];
+
+// ============================================================
+// File Handling
+// ============================================================
+function handleFileSelect(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    currentImageData = ev.target.result.split(',')[1];
+    const preview = document.getElementById('imagePreview');
+    preview.src = ev.target.result;
+    preview.style.display = 'block';
+    document.getElementById('uploadZone').classList.add('has-image');
+    document.getElementById('analyzeBtn').disabled = false;
+  };
+  reader.readAsDataURL(file);
+}
+
+// Drag & Drop
+const uploadZone = document.getElementById('uploadZone');
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault(); uploadZone.classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file) {
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    document.getElementById('fileInput').files = dt.files;
+    handleFileSelect({ target: { files: [file] } });
+  }
+});
+
+// ============================================================
+// UI Helpers
+// ============================================================
+function switchTab(name) {
+  const tabs = ['overview','interactions','dosage','effects','ocr'];
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    t.classList.toggle('active', tabs[i] === name);
+  });
+  document.querySelectorAll('.tab-content').forEach(tc => {
+    tc.classList.toggle('active', tc.id === 'tab-' + name);
+  });
+}
+
+function showLoading() {
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('resultsState').style.display = 'none';
+  document.getElementById('loadingState').style.display = 'flex';
+  ['step1','step2','step3','step4'].forEach(s => {
+    document.getElementById(s).className = 'step-item';
+  });
+}
+
+async function animateSteps() {
+  const steps = ['step1','step2','step3','step4'];
+  for (let i = 0; i < steps.length; i++) {
+    if (i > 0) document.getElementById(steps[i-1]).className = 'step-item done';
+    document.getElementById(steps[i]).className = 'step-item active';
+    await delay(1000);
+  }
+}
+
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function resetApp() {
+  currentImageData = null;
+  document.getElementById('imagePreview').style.display = 'none';
+  document.getElementById('imagePreview').src = '';
+  document.getElementById('uploadZone').classList.remove('has-image');
+  document.getElementById('analyzeBtn').disabled = true;
+  document.getElementById('fileInput').value = '';
+  document.getElementById('medPanel').style.display = 'none';
+  document.getElementById('emptyState').style.display = 'flex';
+  document.getElementById('loadingState').style.display = 'none';
+  document.getElementById('resultsState').style.display = 'none';
+}
+
+// ============================================================
+// Analysis — calls Flask backend or Claude directly
+// ============================================================
+async function analyzeImage() {
+  if (!currentImageData) return;
+  showLoading();
+  animateSteps();
+
+  try {
+    let result;
+    if (USE_BACKEND) {
+      result = await callBackend(currentImageData);
+    } else {
+      throw new Error("Direct API calls from browser are disabled for security. Please use the Flask backend.");
+    }
+    displayResults(result);
+  } catch (err) {
+    console.error(err);
+    alert('Analysis failed: ' + err.message + '\n\nMake sure your API key is configured.');
+    resetApp();
+  }
+}
+
+async function callBackend(imageB64) {
+  const res = await fetch(`${BACKEND_URL}/analyze`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ image_base64: imageB64, image_type: 'jpeg' })
+  });
+  if (!res.ok) throw new Error(`Backend error: ${res.status}`);
+  return res.json();
+}
+
+async function callClaudeDirect(imageB64) {
+  throw new Error("Direct Claude/Gemini API calls from browser are disabled for security. Please start and use the Flask backend.");
+}
+
+// ============================================================
+// Display Results
+// ============================================================
+function displayResults(r) {
+  document.getElementById('loadingState').style.display = 'none';
+  document.getElementById('resultsState').style.display = 'block';
+  switchTab('overview');
+
+  // Medicines list
+  const medPanel = document.getElementById('medPanel');
+  medPanel.style.display = 'block';
+  document.getElementById('medCount').textContent = (r.medicines || []).length;
+  document.getElementById('medicinesList').innerHTML = (r.medicines || []).map((m, i) => `
+    <div class="medicine-tag">
+      <div class="med-dot" style="background:${MED_COLORS[i % MED_COLORS.length]}"></div>
+      <span class="med-name">${m.name}</span>
+      <span class="med-dose">${m.dose} · ${m.frequency}</span>
+    </div>`).join('');
+
+  // Safety score
+  const score = parseInt(r.safety_score) || 80;
+  const ring = document.getElementById('safetyRing');
+  const scoreEl = document.getElementById('safetyScore');
+  scoreEl.textContent = score;
+  const ringClass = score >= 80 ? 'safe' : score >= 55 ? 'moderate' : 'high';
+  const scoreColor = score >= 80 ? '#4ade80' : score >= 55 ? '#fbbf24' : '#f87171';
+  ring.className = 'score-ring ' + ringClass;
+  scoreEl.style.color = scoreColor;
+
+  const dangerCount = (r.interactions || []).filter(i => i.severity === 'danger').length;
+  document.getElementById('overallVerdict').innerHTML =
+    `<span style="color:${scoreColor}">${r.overall_risk || 'Unknown'} Risk</span>`;
+  document.getElementById('overallSub').textContent =
+    `${dangerCount} dangerous interaction${dangerCount !== 1 ? 's' : ''} · ${(r.medicines || []).length} medicine${(r.medicines||[]).length !== 1 ? 's' : ''} detected`;
+
+  // Summary
+  const effects = (r.side_effects || []).flatMap(s => s.effects || []).slice(0, 8);
+  document.getElementById('summaryContent').innerHTML =
+    `<p>${r.summary || 'No summary available.'}</p>` +
+    (effects.length ? `<div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:6px">
+      ${effects.map(e => `<span class="status-badge badge-info"><span class="dot dot-info"></span>${e.replace(/_/g,' ')}</span>`).join('')}
+    </div>` : '');
+
+  // Interactions
+  const interEl = document.getElementById('interactionsContent');
+  const interactions = r.interactions || [];
+  if (interactions.length === 0 || (interactions.length === 1 && interactions[0].severity === 'ok')) {
+    interEl.innerHTML = `<div class="interaction-item ok">
+      <p><strong>No interactions detected</strong> — all medicines appear safe to use together based on the Prolog knowledge base.</p>
+    </div>`;
+  } else {
+    interEl.innerHTML = interactions.map(i => `
+      <div class="interaction-item ${i.severity}">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+          <span class="status-badge badge-${i.severity}"><span class="dot dot-${i.severity}"></span>${i.severity.toUpperCase()}</span>
+          <strong style="font-size:13px">${(i.drugs || []).join(' + ')}</strong>
+        </div>
+        <p>${i.description}</p>
+      </div>`).join('');
+  }
+
+  // Dosage
+  const dosEl = document.getElementById('dosageContent');
+  const checks = r.dosage_checks || [];
+  dosEl.innerHTML = checks.length
+    ? checks.map(d => `
+      <div class="interaction-item ${d.status}">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <span class="status-badge badge-${d.status}"><span class="dot dot-${d.status}"></span>${d.status.toUpperCase()}</span>
+          <strong>${d.medicine}</strong>
+        </div>
+        <p>Prescribed: <strong>${d.prescribed_dose}</strong> · Max safe: <strong>${d.max_safe_dose}</strong><br>${d.note}</p>
+      </div>`).join('')
+    : '<p style="color:#4a5568;font-size:13px;padding:8px 0">No dosage data available.</p>';
+
+  // Side Effects
+  const efEl = document.getElementById('effectsContent');
+  const se = r.side_effects || [];
+  efEl.innerHTML = se.length
+    ? se.map(s => `
+      <div class="interaction-item ok" style="margin-bottom:8px">
+        <strong style="display:block;margin-bottom:6px">${s.medicine}</strong>
+        <div style="display:flex;flex-wrap:wrap;gap:5px">
+          ${(s.effects || []).map(e => `<span class="status-badge badge-info"><span class="dot dot-info"></span>${e.replace(/_/g,' ')}</span>`).join('')}
+        </div>
+      </div>`).join('')
+    : '<p style="color:#4a5568;font-size:13px;padding:8px 0">No side effect data available.</p>';
+
+  // OCR
+  document.getElementById('ocrText').textContent = r.ocr_text || 'No raw text extracted.';
+}
+
+// ============================================================
+// Demo Data
+// ============================================================
+function loadDemo() {
+  const demo = {
+    ocr_text: "Patient: Ahmad Raza | Date: 15/04/2025\n\n1. Tab. Warfarin 5mg — once daily\n2. Tab. Aspirin 100mg — once daily  \n3. Tab. Metformin 500mg — twice daily\n4. Cap. Omeprazole 20mg — once daily\n\nDr. Sana Malik MBBS FCPS\nCity Hospital, Lahore",
+    patient_name: "Ahmad Raza",
+    doctor_name: "Dr. Sana Malik",
+    medicines: [
+      { name: "Warfarin", dose: "5mg", frequency: "once daily", duration: "ongoing" },
+      { name: "Aspirin", dose: "100mg", frequency: "once daily", duration: "ongoing" },
+      { name: "Metformin", dose: "500mg", frequency: "twice daily", duration: "ongoing" },
+      { name: "Omeprazole", dose: "20mg", frequency: "once daily", duration: "ongoing" }
+    ],
+    interactions: [
+      {
+        drugs: ["Warfarin", "Aspirin"],
+        severity: "danger",
+        description: "Serious bleeding risk. Both drugs impair coagulation — concurrent use significantly increases risk of hemorrhage. Requires immediate physician review before dispensing."
+      },
+      {
+        drugs: ["Clopidogrel", "Omeprazole"],
+        severity: "warning",
+        description: "Note: If clopidogrel is also prescribed, omeprazole inhibits its activation via CYP2C19. Consider switching to pantoprazole."
+      }
+    ],
+    dosage_checks: [
+      { medicine: "Warfarin", prescribed_dose: "5mg/day", max_safe_dose: "15mg/day", status: "ok", note: "Within therapeutic range. Regular INR monitoring is required." },
+      { medicine: "Aspirin", prescribed_dose: "100mg/day", max_safe_dose: "4000mg/day", status: "ok", note: "Low-dose aspirin — well within safe limits." },
+      { medicine: "Metformin", prescribed_dose: "1000mg/day", max_safe_dose: "3000mg/day", status: "ok", note: "Standard twice-daily dosing — within recommended range." },
+      { medicine: "Omeprazole", prescribed_dose: "20mg/day", max_safe_dose: "80mg/day", status: "ok", note: "Standard proton pump inhibitor dose — safe." }
+    ],
+    side_effects: [
+      { medicine: "Warfarin", effects: ["bleeding_risk", "bruising", "nosebleeds"] },
+      { medicine: "Aspirin", effects: ["GI_irritation", "bleeding_risk"] },
+      { medicine: "Metformin", effects: ["nausea", "diarrhea", "vitamin_B12_deficiency"] },
+      { medicine: "Omeprazole", effects: ["headache", "low_magnesium_long_term"] }
+    ],
+    safety_score: 52,
+    overall_risk: "High",
+    summary: "Patient is prescribed anticoagulant therapy (Warfarin) alongside antiplatelet medication (Aspirin), creating a clinically dangerous drug interaction with serious bleeding risk. Immediate physician consultation is strongly recommended before this prescription is dispensed."
+  };
+
+  currentImageData = 'demo';
+  document.getElementById('analyzeBtn').disabled = false;
+  showLoading();
+  animateSteps();
+  setTimeout(() => displayResults(demo), 4200);
+}
+</script>
+</body>
+</html>
